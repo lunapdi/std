@@ -5,19 +5,23 @@
 #include <stdint.h>
 #include <pthread.h>
 
-typedef struct block_header {
-    struct block_header *prev;
-    struct block_header *next;
-    int64_t size; /* sign bit == free flag */
-} block_header_t;
+typedef struct allocator {
+    void *self;
+    void *(*alloc)(void *self, size_t size);
+    void (*dealloc)(void *self, void *ptr);
+} allocator_i;
 
-typedef struct base_allocator {
-    block_header_t *free_list;
-    pthread_mutex_t mutex;
-} base_allocator_t;
+typedef struct fixed_buf_allocator {
+    char *buf;
+    size_t size;
+    size_t pos;
+} fixed_buf_allocator_t;
 
+allocator_i init_fixed_buf_allocator_i(fixed_buf_allocator_t *a);
 
-void *base_alloc(base_allocator_t *a, size_t size);
-void base_dealloc(base_allocator_t *a, void *ptr);
+static allocator_i global_allocator;
+
+void *alloc(size_t size);
+void dealloc(void *ptr);
 
 #endif /* STD_H */
