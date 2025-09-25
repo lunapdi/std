@@ -19,8 +19,6 @@ typedef struct fixed_buf_allocator {
 
 allocator_i init_fixed_buf_allocator_i(fixed_buf_allocator_t *a);
 
-static allocator_i global_allocator;
-
 void *alloc(size_t size);
 void dealloc(void *ptr);
 

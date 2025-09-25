@@ -9,12 +9,12 @@ void noop_dealloc(void *self, void *ptr)
 void *fixed_buf_allocator_alloc(void *self, size_t size)
 {
     fixed_buf_allocator_t *a = self;
+    size_t pos = a->pos;
 
     if (a->pos + size >= a->size) {
         return NULL;
     }
 
-    size_t pos = a->pos;
     a->pos += size;
     return a->buf + pos;
 }
@@ -31,17 +31,16 @@ allocator_i init_fixed_buf_allocator_i(fixed_buf_allocator_t *a)
 
 static char default_fixed_buf[32 * 1024];
 static fixed_buf_allocator_t default_fixed_buf_allocator = {
-    .buf = default_fixed_buf,
-    .size = sizeof(default_fixed_buf),
-    .pos = 0,
+    default_fixed_buf,
+    sizeof(default_fixed_buf),
+    0,
 };
 
-__attribute__((constructor))
-void init_global_allocator(void)
-{
-    global_allocator = init_fixed_buf_allocator_i(
-        &default_fixed_buf_allocator);
-}
+static allocator_i global_allocator = {
+    &default_fixed_buf_allocator,
+    fixed_buf_allocator_alloc,
+    noop_dealloc,
+};
 
 void *alloc(size_t size)
 {
